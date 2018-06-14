@@ -1,13 +1,5 @@
 # TDD
 
-//
-//  LoginTests.m
-//  SimpleLoginObjectiveCTests
-//
-//  Created by BNPPF on 14/06/2018.
-//  Copyright © 2018 BNPPF. All rights reserved.
-//
-
 #import <XCTest/XCTest.h>
 #import "ViewController.h"
 #import "LoginPresenter.h"
@@ -145,13 +137,9 @@ _______________________
 
 
 
-//
-//  ViewController.m
-//  SimpleLoginObjectiveC
-//
-//  Created by BNPPF on 14/06/2018.
-//  Copyright © 2018 BNPPF. All rights reserved.
-//
+
+
+
 
 #import "ViewController.h"
 #import "LoginPresenter.h"
