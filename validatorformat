@@ -1,0 +1,282 @@
+
+-(void)testShouldDisplay1comma00WhenGivingInput1{
+
+    NSString *expectedValue = @"1,00";
+    
+    XCTAssertTrue([expectedValue isEqualToString:[self shouldReturnFormattedAmountWithLang:@"1"]], @"istrue");
+}
+-(void)testShouldDisplay12comma00WhenGivingInput12{
+    
+    NSString *expectedValue = @"12,00";
+    
+    XCTAssertTrue([expectedValue isEqualToString:[self shouldReturnFormattedAmountWithLang:@"12"]], @"istrue");
+}
+-(void)testShouldDisplay12comma00WhenGivingInput12dot{
+    
+    NSString *expectedValue = @"12,00";
+    
+    XCTAssertTrue([expectedValue isEqualToString:[self shouldReturnFormattedAmountWithLang:@"12."]], @"istrue");
+}
+-(void)testShouldDisplay12comma30WhenGivingInput12dot3{
+ 
+    NSString *expectedValue = @"12,30";
+    
+    XCTAssertTrue([expectedValue isEqualToString:[self shouldReturnFormattedAmountWithLang:@"12.3"]], @"istrue");
+}
+-(void)testShouldDisplay12comma35WhenGivingInput12dot35{
+    
+  
+    NSString *expectedValue = @"12,35";
+    
+    XCTAssertTrue([expectedValue isEqualToString:[self shouldReturnFormattedAmountWithLang:@"12.35"]], @"istrue");
+}
+-(void)testShouldDisplay1dot234comma00WhenGivingInput1234{
+    
+    
+    NSString *expectedValue = @"1.234,00";
+    
+    XCTAssertTrue([expectedValue isEqualToString:[self shouldReturnFormattedAmountWithLang:@"1234"]], @"istrue");
+}
+-(void)testShouldDisplay1Dot00WhenGivingInput1InEnglishFormatting{
+    NSString *expectedValue = @"1.00";
+
+    NSString *actualValue = [self.amountFormatter formatAmountForRegionWithLang:@"1" withLanguage:@"en"];
+
+    XCTAssertTrue([expectedValue isEqualToString:actualValue], @"istrue");
+}
+
+-(void)testShouldDisplay12Dot00WhenGivingInput12InEnglishFormatting{
+    NSString *expectedValue = @"12.00";
+    
+    NSString *actualValue = [self.amountFormatter formatAmountForRegionWithLang:@"12" withLanguage:@"en"];
+    
+    XCTAssertTrue([expectedValue isEqualToString:actualValue], @"istrue");
+}
+
+-------------
+#import <Foundation/Foundation.h>
+typedef enum{
+    en = 0,
+    fr,
+    nl,
+    de
+} languageNames;
+
+@interface AmountFormatter : NSObject
+-(NSString*)formatAmountForRegionWithLang:(NSString*)amountString withLanguage:(NSString*)Lang;
+
+@end
+------------------
+
+@interface AmountFormatter(){
+NSString *decimalSeparator;
+NSString *thousandSeparator;
+}
+@property (nonatomic, strong) NSString* separator;
+@end
+
+@implementation AmountFormatter
+
+-(id)init{
+    
+  if(self = [super init]){
+      decimalSeparator = @",";
+      thousandSeparator = @"$1.";
+    }
+   
+    return self;
+}
+
+
+- (NSString*)getAmountInDoubleFormatWith2Decimal:(NSString *)amountString {
+    double convertedDouble = [amountString doubleValue];
+    
+    NSString *stringVal = [NSString stringWithFormat:@"%.2f", convertedDouble];    
+    return stringVal;
+}
+
+-(NSString*)formatAmountForRegionWithLang:(NSString*)amountString {
+    
+    amountString = [self getAmountInDoubleFormatWith2Decimal:amountString];
+    
+    amountString = [amountString stringByReplacingOccurrencesOfString:@"." withString:decimalSeparator];
+    
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"(\\d)(?=(\\d{3})+(?!\\d))"                options:NSRegularExpressionCaseInsensitive                  error:nil];
+    
+    NSString *modifiedString = [regex stringByReplacingMatchesInString:amountString options:0  range:NSMakeRange(0, [amountString length])
+                                                          withTemplate:thousandSeparator];
+    
+    return modifiedString;
+}
+
+-(NSString*)formatAmountForRegionWithLang:(NSString*)amountString withLanguage:(NSString*)Lang {
+  
+    /* checking only digits and , or .*/
+   /* NSRegularExpression *regex1 = [NSRegularExpression regularExpressionWithPattern:@"[0-9\\.\\,]"                options:NSRegularExpressionCaseInsensitive                  error:nil];
+       NSInteger numberofMatches1 = [regex1 numberOfMatchesInString:amountString options:0 range:NSMakeRange(0, amountString.length)];
+    if((numberofMatches1 == 0 )||(numberofMatches1 != [amountString length])){
+        return @"";
+    }*/
+    
+    /*Allow only dots and ,*/
+    
+  /*  NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"[\\.\\,]"                options:NSRegularExpressionCaseInsensitive                  error:nil];
+    
+   NSInteger numberofMatches = [regex numberOfMatchesInString:amountString options:0 range:NSMakeRange(0, amountString.length)];
+    
+    if(numberofMatches >1){
+        return @"";
+    }*/
+    
+    --------------
+    
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string{
+    NSString *newString = [self.txtAmount.text stringByReplacingCharactersInRange:range withString:string];
+    
+   /* if([newString hasPrefix:@"."]){
+        newString = [NSString stringWithFormat:@"0%@",string];
+    }*/
+    
+    //textField.text = newString;
+    if( [[self.amountformatter formatAmountForRegionWithLang:newString withLanguage:@"en"] isEqualToString: @""]){
+        return  NO;
+    }else{
+        return YES;
+    }
+    
+}
+- (BOOL)textFieldShouldClear:(UITextField *)textField{
+    return YES;
+}
+
+    
+    /*allow only two digit after . or ,*/
+ /*   NSRegularExpression *regex2 = [NSRegularExpression regularExpressionWithPattern:@"\\.(\\d{3})"                options:NSRegularExpressionCaseInsensitive                  error:nil];
+    
+    NSInteger numberofMatches2 = [regex2 numberOfMatchesInString:amountString options:0 range:NSMakeRange(0, amountString.length)];
+    
+    if(numberofMatches2 == 1){
+        return @"";
+    }*/
+    
+   /* if([amountString hasPrefix:@"."]){
+        amountString = [NSString stringWithFormat:@"0%@",amountString];
+    }*/
+    
+    if( [self validate:amountString]){
+    
+    if([Lang isEqualToString:@"en"]){
+        decimalSeparator = @".";
+        thousandSeparator = @"$1,";
+    } else if([Lang isEqualToString:@"fr"]) {
+        decimalSeparator = @",";
+        thousandSeparator = @"$1 ";
+    }else {
+        decimalSeparator = @",";
+        thousandSeparator = @"$1.";
+    }
+    
+    return [self formatAmountForRegionWithLang:amountString ];
+    }
+    else{
+        return @"";
+    }
+}
+
+-(BOOL)validate:(NSString*)input{
+    
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"(\\d)+[\\.\\,]?\\d{0,2}"                options:NSRegularExpressionCaseInsensitive                  error:nil];
+    
+    
+    NSArray *matchString = [regex matchesInString:input options:0 range:NSMakeRange(0, [input length])];
+    
+    NSMutableArray *arrayOfURLs = [[NSMutableArray alloc] init];
+
+    for (NSTextCheckingResult *match in matchString) {
+        NSString* substringForMatch = [input substringWithRange:match.range];
+        NSLog(@"Extracted URL: %@",substringForMatch);
+        
+        [arrayOfURLs addObject:substringForMatch];
+    }
+    
+    // return non-mutable version of the array
+   // return [NSArray arrayWithArray:arrayOfURLs];
+    
+    if([arrayOfURLs count]>0 && ([input length] == [[arrayOfURLs objectAtIndex:0] length])){
+        return YES;
+    }
+    return NO;
+    //NSInteger numberofMatches = [regex numberOfMatchesInString:input options:0 range:NSMakeRange(0, input.length)];
+    
+    
+    
+}
+
+
+-(void)testForMultipleLanguageFormatting{
+    NSString *expectedValue1 = @"12.00";
+    NSString *expectedValue2 = @"12,00";
+    
+    NSString *actualValue1 = [self.amountFormatter formatAmountForRegionWithLang:@"12" withLanguage:@"en"];
+    NSString *actualValue2 = [self.amountFormatter formatAmountForRegionWithLang:@"12" withLanguage:@"nl"];
+    
+    XCTAssertTrue([expectedValue1 isEqualToString:actualValue1], @"istrue");
+    XCTAssertTrue([expectedValue2 isEqualToString:actualValue2], @"istrue");
+}
+
+-(void)testForValidatingStrings{
+    NSString *expectedValue1 = @"";
+    
+    NSString *actualValue1 = [self.amountFormatter formatAmountForRegionWithLang:@"a12" withLanguage:@"en"];
+    
+    XCTAssertTrue([expectedValue1 isEqualToString:actualValue1], @"istrue");
+}
+
+-(void)testForValidatingDecimalChar{
+    NSString *expectedValue1 = @"";
+    
+    NSString *actualValue1 = [self.amountFormatter formatAmountForRegionWithLang:@"12.23." withLanguage:@"en"];
+    
+    XCTAssertTrue([expectedValue1 isEqualToString:actualValue1], @"istrue");
+}
+
+-(void)testForValidatingSpecialChar{
+    NSString *expectedValue1 = @"";
+    
+    NSString *actualValue1 = [self.amountFormatter formatAmountForRegionWithLang:@"12$" withLanguage:@"en"];
+    
+    XCTAssertTrue([expectedValue1 isEqualToString:actualValue1], @"istrue");
+}
+
+-(NSString*)shouldReturnFormattedAmountWithLang:(NSString*)givenAmount {
+    return [self.amountFormatter formatAmountForRegionWithLang:givenAmount withLanguage:@"nl"];
+}
+
+-(void)testShouldDisplay1comma00WhenGivingInput1InFrenchFormatting{
+    NSString *expectedValue = @"1,00";
+    
+    NSString *actualValue = [self.amountFormatter formatAmountForRegionWithLang:@"1" withLanguage:@"fr"];
+    
+    XCTAssertTrue([expectedValue isEqualToString:actualValue], @"istrue");
+}
+-(void)testShouldDisplay1space234comma00WhenGivingInput1234InFrenchFormatting{
+    NSString *expectedValue = @"1 234,00";
+    
+    NSString *actualValue = [self.amountFormatter formatAmountForRegionWithLang:@"1234" withLanguage:@"fr"];
+    
+    XCTAssertTrue([expectedValue isEqualToString:actualValue], @"istrue");
+}
+-(void)testEmpty{
+    NSString *expectedValue = @"";
+    
+    NSString *actualValue = [self.amountFormatter formatAmountForRegionWithLang:@"" withLanguage:@"fr"];
+    
+    XCTAssertTrue([expectedValue isEqualToString:actualValue], @"istrue");
+}
+-(void)testForValidatingDecimalOnlyTwoChar{
+    NSString *expectedValue1 = @"";
+    
+    NSString *actualValue1 = [self.amountFormatter formatAmountForRegionWithLang:@"12.232" withLanguage:@"en"];
+    
+    XCTAssertTrue([expectedValue1 isEqualToString:actualValue1], @"istrue");
+}
